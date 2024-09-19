@@ -1,7 +1,13 @@
-export default function App() {
+import Dashboard from './pages/Dashboard';
+
+// Komponen utama App
+function App() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  )
+    <div>
+      {/* Tampilkan Dashboard sebagai halaman utama */}
+      <Dashboard />
+    </div>
+  );
 }
+
+export default App;
