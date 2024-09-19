@@ -1,26 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addTask } from '../features/tasks/tasksSlice';
+import { addTask, editTask } from '../features/tasks/tasksSlice';
 
-const TaskForm = () => {
-  const [title, setTitle] = useState(''); // State untuk title
-  const [description, setDescription] = useState(''); // State untuk description
-  const [priority, setPriority] = useState('Low'); // State untuk priority
-  const [status, setStatus] = useState('To-Do'); // State untuk status
+const TaskForm = ({ taskToEdit, clearEdit }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('Low');
+  const [status, setStatus] = useState('To-Do');
 
-  const dispatch = useDispatch(); // Gunakan dispatch untuk mengirim action
+  const dispatch = useDispatch();
+
+  // Jika ada task yang akan di-edit, set nilai form sesuai task yang akan diedit
+  useEffect(() => {
+    if (taskToEdit) {
+      setTitle(taskToEdit.title);
+      setDescription(taskToEdit.description);
+      setPriority(taskToEdit.priority);
+      setStatus(taskToEdit.status);
+    }
+  }, [taskToEdit]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newTask = {
-      id: Date.now(), // ID unik untuk task baru
-      title,
-      description,
-      priority,
-      status,
-    };
-    dispatch(addTask(newTask)); // Dispatch action addTask
-    setTitle(''); // Reset form setelah submit
+
+    // Jika ada taskToEdit, maka edit task, jika tidak, tambahkan task baru
+    if (taskToEdit) {
+      dispatch(editTask({ id: taskToEdit.id, title, description, priority, status }));
+      clearEdit(); // Bersihkan mode edit setelah task disimpan
+    } else {
+      dispatch(addTask({ id: Date.now(), title, description, priority, status }));
+    }
+
+    // Reset form setelah submit
+    setTitle('');
     setDescription('');
     setPriority('Low');
     setStatus('To-Do');
@@ -28,7 +40,6 @@ const TaskForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="p-4 bg-gray-100 rounded-lg shadow-md">
-      {/* Input untuk title task */}
       <div className="mb-4">
         <label className="block text-sm font-bold">Title</label>
         <input
@@ -40,7 +51,6 @@ const TaskForm = () => {
           required
         />
       </div>
-      {/* Input untuk deskripsi task */}
       <div className="mb-4">
         <label className="block text-sm font-bold">Description</label>
         <textarea
@@ -50,7 +60,6 @@ const TaskForm = () => {
           placeholder="Task description"
         />
       </div>
-      {/* Dropdown untuk priority task */}
       <div className="mb-4">
         <label className="block text-sm font-bold">Priority</label>
         <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full px-2 py-1 border rounded">
@@ -59,7 +68,6 @@ const TaskForm = () => {
           <option>High</option>
         </select>
       </div>
-      {/* Dropdown untuk status task */}
       <div className="mb-4">
         <label className="block text-sm font-bold">Status</label>
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-2 py-1 border rounded">
@@ -68,8 +76,9 @@ const TaskForm = () => {
           <option>Done</option>
         </select>
       </div>
-      {/* Button untuk submit form */}
-      <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">Add Task</button>
+      <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
+        {taskToEdit ? 'Update Task' : 'Add Task'}
+      </button>
     </form>
   );
 };
